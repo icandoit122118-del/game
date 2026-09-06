@@ -542,3 +542,112 @@ ESM/ESP는 스키마를 가진 레코드 DB 파일이고, 엔진은 **렌더링�
 UE5로 옮긴다는 건 이 데이터베이스 모델을 버리고 씬 그래프 모델로 간다는 뜻이다. 렌더링은 얻지만 **DB가 공짜로 주던 것들(영속성, 모드 레이어링, 균일한 오브젝트 모델)을 전부 직접 다시 지어야 한다.**
 
 오블리비언 리마스터드가 원본 엔진을 시뮬레이션 레이어로 남긴 이유가 정확히 이것이다. 렌더러는 갈아끼울 수 있어도, **데이터베이스는 갈아끼울 수 없다.**
+
+---
+
+# 부록 B. 기술 명칭 대조표
+
+부록 A에서 설명한 각 부품의 **일반적인 컴퓨터과학 / 소프트웨어공학 용어**.
+베데스다가 발명한 게 아니라, 대부분 다른 분야에서 확립된 기법을 게임 월드에 적용한 것이다.
+
+## B-1. 전체 아키텍처의 정식 명칭
+
+한 문장으로 말하면:
+
+> **공간 페이징을 적용한, Copy-on-Write 기반 베이스라인+델타 영속 객체 데이터베이스**
+> *(Baseline-plus-delta persistent object database with copy-on-write semantics and spatial paging)*
+
+구성 개념 셋:
+
+| 개념 | 정식 용어 | 설명 |
+|---|---|---|
+| ESM = 읽기 전용 원본, 세이브 = 덮어쓰기 레이어 | **Copy-on-Write (CoW)** / **Overlay(Union) 레이어링** | 수정 전엔 원본 공유, 수정 순간에만 사본 생성 |
+| 안 바뀐 건 저장 안 함 | **델타 인코딩 (Delta Encoding)** / **차분 저장** | 기준본 대비 변경분만 기록 |
+| 모든 오브젝트가 영구 ID로 자동 보존 | **직교 영속성 (Orthogonal Persistence)** | 타입·위치와 무관하게 균일하게 적용되는 영속성 |
+
+## B-2. 부품별 대조표
+
+| 폴아웃 4의 부품 | 정식 기술 명칭 | 같은 기술을 쓰는 다른 사례 |
+|---|---|---|
+| **FormID** | **OID (Object Identifier)** / 대리키(Surrogate Key) / 영속 핸들 | 객체지향 DB의 OID, ECS의 Entity ID, UUID |
+| **베이스 폼 ↔ 레퍼런스** | **Type Object 패턴** (근접: Flyweight, Prototype) | 『Game Programming Patterns』의 Type Object. 내재 상태/외재 상태 분리 |
+| **Change Record** | **델타 인코딩** + **필드 단위 더티 트래킹** | git 팩파일 델타 압축, rsync, 비디오 코덱 |
+| **changeFlags 비트필드** | **더티 비트 / 더티 플래그 (Dirty Bit)** | ORM의 변경 추적, OS 페이지 테이블의 dirty bit |
+| **ESM(원본) + 세이브(델타)** | **I-프레임 / P-프레임** 구조 | H.264 등 영상 코덱의 키프레임 + 차분 프레임 |
+| **BSExtraDataList** | **프로퍼티 백 (Property Bag)** / 희소 컴포넌트 저장 | ECS의 sparse set, 이종(heterogeneous) 속성 리스트 |
+| **Persistent vs Temporary 레퍼런스** | **고정(Pinned) vs 페이지 가능(Pageable)** | OS 가상 메모리의 pinned page, DB 버퍼풀 고정 |
+| **셀 그리드 + uGridsToLoad** | **균일 공간 분할 (Uniform Spatial Partition)** + **페이징** | 타일맵 스트리밍, 옥트리/그리드 컬링 |
+| **셀 로드 시 델타 적용** | **하이드레이션 (Hydration / Rehydration)** | ORM 엔티티 하이드레이션, SSR 프론트엔드 하이드레이션 |
+| **셀 리셋 타이머** | **TTL 기반 캐시 축출 (TTL Eviction)** | Redis TTL, HTTP 캐시 max-age |
+| **로드 오더 레코드 오버라이드** | **LWW(Last-Write-Wins) 계층 병합** / 캐스케이딩 오버라이드 | CSS 캐스케이드, Docker 이미지 레이어, kustomize 오버레이 |
+| **Havok 정지 후 좌표 확정** | **강체 슬리핑 / 비활성화 (Rigid Body Deactivation)** | 모든 물리 엔진의 sleep threshold |
+| **베이스라인 공유** | **구조적 공유 (Structural Sharing)** | 영속 자료구조(persistent data structure), 불변 컬렉션 |
+| **ESM/ESP 파일 자체** | **스키마 기반 레코드 데이터베이스** | 사실상 OODBMS 파일 포맷 |
+
+## B-3. 특히 정확한 비유 세 가지
+
+### ① OverlayFS / Docker 이미지 레이어
+
+```
+┌────────────────────────────┐
+│ 세이브 파일 (Change Forms) │  ← 쓰기 가능 레이어 (upperdir)
+├────────────────────────────┤
+│ 모드 ESP들 (로드 오더순)   │  ← 읽기 전용 레이어들
+├────────────────────────────┤
+│ Fallout4.esm               │  ← 읽기 전용 베이스 (lowerdir)
+└────────────────────────────┘
+```
+
+파일을 수정하면 상위 레이어로 **copy-up**되고, 안 건드린 파일은 하위 레이어에서 그대로 읽는다.
+Creation Engine은 **파일 대신 레코드 단위로 이걸 한다.** 개념적으로 완전히 동일하다.
+
+### ② 영상 코덱의 I-프레임 / P-프레임
+
+- **ESM = I-프레임(키프레임)** — 완전한 원본 상태
+- **세이브 = P-프레임(차분 프레임)** — "직전 대비 뭐가 바뀌었나"만 기록
+
+영상이 매 프레임 전체 화면을 저장하지 않듯, 세이브도 매번 월드 전체를 저장하지 않는다.
+
+### ③ OS 가상 메모리
+
+| 폴아웃 4 | OS |
+|---|---|
+| 셀(Cell) | 페이지(Page) |
+| uGridsToLoad 범위 | 레지던트 셋(Resident Set) |
+| Persistent 레퍼런스 | 고정 페이지(Pinned Page) — 스왑 아웃 금지 |
+| 셀 언로드 시 델타 기록 | 더티 페이지 write-back |
+| changeFlags | 페이지 테이블의 dirty bit |
+
+## B-4. UE5 쪽 용어
+
+| 항목 | UE5의 정식 명칭 |
+|---|---|
+| 저장 시스템 | **명시적 객체 그래프 직렬화** (`USaveGame`, `FArchive`) |
+| 저장 대상 지정 | `SaveGame` UPROPERTY 지정자 — **옵트인(opt-in) 직렬화** |
+| 직렬화 도구 | `FObjectAndNameAsStringProxyArchive` — **프록시 아카이브 패턴** |
+| 액터 영구 ID | `FActorGuid` (OFPA) — FormID에 가장 근접한 대응물 |
+| 로드 없이 읽는 메타데이터 | `FWorldPartitionActorDesc` — **액터 디스크립터** |
+| 스트리밍 | **World Partition** — 공간 분할 + 스트리밍 소스 기반 |
+
+**UE5에 없는 것의 정식 명칭:**
+- 엔진 레벨의 **자동 더티 트래킹 (automatic dirty tracking)**
+- **베이스라인 대비 델타 영속화 (baseline-relative delta persistence)**
+- **직교 영속성 (orthogonal persistence)**
+
+UE5는 "무엇을 저장할지 개발자가 열거하는" **옵트인 직렬화**고, Creation Engine은 "모든 변경이 자동 추적되는" **직교 영속성**이다. 이 축이 근본적으로 다르다.
+
+## B-5. 왜 이 명칭이 중요한가
+
+용어를 알면 **UE5에서 이걸 만들 때 무엇을 검색해야 하는지**가 명확해진다.
+
+구현 시 필요한 기법의 정식 명칭:
+1. **Persistent Object Identity** — 세션 간 안정적 ID (`FActorGuid` + 런타임 ID 발급기)
+2. **Dirty Tracking** — 프로퍼티 변경 감지 (UE5는 `FProperty` 리플렉션으로 구현 가능)
+3. **Delta Serialization** — 레벨 에셋 기본값 대비 diff (`FArchive`의 델타 직렬화 모드 활용 가능)
+4. **Hydration Hook** — World Partition 셀 로드/언로드 콜백 바인딩
+5. **TTL Eviction Policy** — 세이브 무한 증식 방지
+6. **Save Schema Versioning / Migration** — `FCustomVersion`으로 처리
+
+> 참고: UE5의 네트워크 리플리케이션(`FRepState`, `NetSerialize`)은 이미 **델타 직렬화 + 더티 트래킹**을 하고 있다.
+> 다만 그건 **프레임 단위 네트워크 동기화용 휘발성 델타**지, **디스크 영속화용 델타**가 아니다.
+> 개념은 있는데 용도가 달라서 그대로 못 쓴다 — 하지만 참고 구현으로는 매우 유용하다.
