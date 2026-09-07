@@ -23,6 +23,14 @@ Unreal Engine 2.5 기반 프로젝트를 **Unreal Engine 5**로 이식하기 위
 | [07. 네트워크](docs/ue5-migration/07-networking.md) | 리플리케이션과 RPC 변환 |
 | [08. 프로젝트 셋업](docs/ue5-migration/08-project-setup.md) | 폴더 구조, 네이밍, Git LFS, 빌드 |
 | [09. 체크리스트](docs/ue5-migration/09-checklist.md) | 단계별 체크리스트와 리스크 |
+| [10. 사례: 스플린터셀 3](docs/ue5-migration/10-splinter-cell-chaos-theory.md) | Chaos Theory 기준 취미 개발 계획, 빛·소음·AI 시스템 설계 |
+| [11. 바이브 코딩](docs/ue5-migration/11-vibe-coding-workflow.md) | AI와 함께 UE5를 개발할 때의 작업 방식 |
+
+## 프로토타입
+
+[`prototype/StealthProto/`](prototype/StealthProto/README.md) — 빛 감지 기반 스텔스
+프로토타입 (UE5 C++). 스플린터셀류 스텔스의 핵심이자 UE5에 대응 기능이 없는
+라이트 미터를 구현했습니다.
 
 ## 저장소 설정
 
