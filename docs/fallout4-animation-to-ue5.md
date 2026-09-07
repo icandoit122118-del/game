@@ -281,3 +281,7 @@ UE5/블렌더에서 만든 애니메이션을 **폴아웃 4로 되돌리는** �
 - UE5 IK Rig 리타게팅 — <https://dev.epicgames.com/documentation/unreal-engine/ik-rig-animation-retargeting-in-unreal-engine>
 - UE5 Auto Retargeting — <https://dev.epicgames.com/documentation/unreal-engine/auto-retargeting-in-unreal-engine>
 - UE5 Skeletons — <https://dev.epicgames.com/documentation/unreal-engine/skeletons-in-unreal-engine>
+
+---
+
+**관련 문서**: 30fps 원본을 60fps로 다시 만드는 방법(AI 인비트위닝 / MCP 자동화)은 [animation-60fps-ai-mcp.md](./animation-60fps-ai-mcp.md) 를 참고하세요.
