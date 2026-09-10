@@ -1,0 +1,41 @@
+{
+  "mcpServers": {
+    "fetch": {
+      "command": "C:\\Users\\icand\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\uvx.exe",
+      "args": ["mcp-server-fetch"],
+      "env": {
+        "PYTHONIOENCODING": "utf-8"
+      }
+    },
+    "housecarl": {
+      "command": "D:\\MO2-Skyrim\\_tools\\houseCARL\\1.9.0\\houseCARL\\housecarl\\server\\housecarl-mcp.exe",
+      "args": [],
+      "env": {
+        "DOTNET_ROOT": "D:\\MO2-Skyrim\\_tools\\houseCARL\\dotnet9",
+        "DOTNET_MULTILEVEL_LOOKUP": "0",
+        "HouseCarl__Mo2InstanceDir": "D:\\MO2-Skyrim",
+        "HOUSECARL_DATA_DIR": "D:\\MO2-Skyrim\\_tools\\houseCARL\\data"
+      }
+    },
+    "plan-compat": {
+      "command": "C:\\Users\\icand\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "args": [
+        "-u",
+        "-X",
+        "utf8",
+        "D:\\MO2-Skyrim\\_tools\\plan-compat\\mcp_server.py"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONUTF8": "1",
+        "PYTHONUNBUFFERED": "1"
+      }
+    },
+    "skylink": {
+      "command": "dotnet",
+      "args": [
+        "D:\\MO2-Skyrim\\mods\\SkyLink AI\\SKSE\\Plugins\\SkyLinkAI_Server\\SkyrimMCP.dll"
+      ]
+    }
+  }
+}
