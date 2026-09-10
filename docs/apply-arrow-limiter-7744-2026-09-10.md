@@ -16,8 +16,10 @@ Profile: Plan only (`D:\MO2-Skyrim\profiles\Plan`)
 | KR overlay | `mods\SST KR - Arrow Limiter SSE` (ESP strings, unmatched 0) |
 | Left | `+SST KR - Arrow Limiter SSE` above `+Arrow Limiter SSE` (below Show Follower Carry Weight) |
 | Right | `*LFGAmmoLimiter.esp` after `SkyUI_SE.esp` |
+| loadorder.txt | `LFGAmmoLimiter.esp` after `SkyUI_SE.esp` |
 | Runtime gate | arrange_ok (no SKSE DLL) |
 | Requirements | SkyUI +, SKSE on game |
+| 정본 | 빌드 0.46.0 추가 기록 (이후 0.46.1은 진단용 3모드 `-`, Arrow와 무관) |
 
 ## Not done
 
