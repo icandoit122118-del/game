@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "world-projectile-limiter",
+  "version-string": "0.1.0",
+  "description": "SKSE world projectile limiter for Skyrim SE 1.7.104",
+  "homepage": "https://github.com/realfakenerd/OpenSkyrim",
+  "features": {
+    "plugin": {
+      "description": "SKSE plugin",
+      "dependencies": [
+        "spdlog"
+      ]
+    },
+    "clibng-support": {
+      "description": "clibng dependencies",
+      "dependencies": [
+        "directxtk",
+        "rapidcsv"
+      ]
+    }
+  },
+  "default-features": [
+    "plugin",
+    "clibng-support"
+  ],
+  "builtin-baseline": "f781d9387e4684783e69e136e2e124ff4660bffc"
+}
