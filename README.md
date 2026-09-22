@@ -33,6 +33,7 @@
 
 | 강 | 파일 | 배우는 내용 | 툴에서 쓰이는 곳 |
 |---|---|---|---|
+| 0 | `lessons/00_basics.md` | **처음이라면 여기부터!** 프로그래밍 용어와 기초 이론 | 모든 강의 |
 | 1 | `lessons/01_mod_info.py` | 변수, print, f-string, 계산 | 결과 출력, 16진수 로드 번호 |
 | 2 | `lessons/02_input_and_strings.py` | input, 문자열 메서드, 슬라이싱 | 확장자 판별, `*` 활성화 표시 |
 | 3 | `lessons/03_conditions.py` | if / elif / else, and / or / not | .esm/.esp/.esl 판별, 개수 제한 |
