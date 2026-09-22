@@ -1,0 +1,9 @@
+# This file is used by Skyrim to keep track of your downloaded content.
+# Please do not modify this file.
+*BetterCities.esm
+*TinyTweaks.esl
+*CoolArmor_Patch.esp
+*CoolArmor.esp
+*OldBrokenMod.esp
+MyFirstMod.esp
+*GhostMod.esp
