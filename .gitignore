@@ -1,3 +1,4 @@
+sample_data/active_list.txt
 __pycache__/
 *.egg-info/
 .pytest_cache/

@@ -120,3 +120,8 @@ Claude 는 변경 후 `pytest` 로 검증하고 PR 로 올립니다. 실제 C++ 
 
 > 참고: 1.7.104 용 Address Library 파일명은 AE 규칙(`versionlib-1-7-104-0.bin`)을 가정했습니다.
 > 또한 1.7.x 대응은 사용하는 CommonLibSSE-NG 버전이 해당 런타임을 지원해야 합니다.
+
+## 프로그래밍 기초 강의 (로드 오더 검사기 만들기)
+
+프로그래밍이 처음이라면 [`lessons/`](lessons/README.md) 부터 보세요. 용어·기초 이론(0강)부터 시작해
+파이썬으로 스카이림 **로드 오더 검사기**(`skyrim_tool/load_order_checker.py`)를 직접 만들어 봅니다.
