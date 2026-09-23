@@ -7,6 +7,9 @@ from addrlib_factory import encode, sample_pairs
 from skbuild.builder import preflight
 from skbuild.cli import main
 from skbuild.config import load_config
+from skbuild.checker import check_runtime
+from skbuild.pe import parse_dll
+from skbuild.runtimes import get_runtime, pack_version
 from skbuild.scaffold import create_project
 
 CXX = shutil.which("g++") or shutil.which("clang++")
@@ -101,3 +104,28 @@ def test_address_library_loader_cpp(minimal, tmp_path):
     bad.write_bytes(encode(pairs)[:-5])
     res = subprocess.run([str(exe), str(bad)], capture_output=True, text=True)
     assert res.returncode == 1 and res.stdout.startswith("ERR")
+
+
+MINGW = shutil.which("x86_64-w64-mingw32-g++-posix") or shutil.which("x86_64-w64-mingw32-g++")
+
+
+@pytest.mark.skipif(MINGW is None, reason="MinGW 교차 컴파일러 없음")
+def test_minimal_cross_compiles_to_valid_plugin(minimal, tmp_path):
+    """minimal 템플릿 main.cpp 를 실제 Windows x64 DLL 로 빌드해 SKSE 호환성 검사를 통과하는지 확인."""
+    dll = tmp_path / "Mini.dll"
+    subprocess.run(
+        [MINGW, "-std=c++20", "-O1", "-shared", "-static", "-Wall", "-Wextra", "-Werror",
+         '-DPLUGIN_NAME="Mini"', '-DPLUGIN_AUTHOR="me"',
+         "-DPLUGIN_VERSION_MAJOR=1", "-DPLUGIN_VERSION_MINOR=2", "-DPLUGIN_VERSION_PATCH=3",
+         "-DWIN32_LEAN_AND_MEAN", "-DNOMINMAX", "-DUNICODE", "-D_UNICODE",
+         str(minimal / "src" / "main.cpp"), "-o", str(dll), "-luuid", "-lshell32", "-lole32"],
+        check=True,
+    )
+    parsed = parse_dll(dll)
+    assert parsed.is_x64 and parsed.has_load and parsed.has_query and parsed.has_version
+    vd = parsed.version_data
+    assert (vd.name, vd.author) == ("Mini", "me")
+    assert vd.plugin_version == pack_version(1, 2, 3)
+    assert vd.uses_address_library and vd.no_struct_use
+    for rt in ("1.7.104", "1.6.1170", "1.5.97"):
+        assert check_runtime(parsed, get_runtime(rt)).compatible, rt
