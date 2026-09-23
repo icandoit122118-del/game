@@ -100,6 +100,18 @@ include_pdb = false
 "config/MyPlugin.ini" = "SKSE/Plugins/MyPlugin.ini"
 ```
 
+## Claude Code 로 작업하기
+
+저장소의 `CLAUDE.md` 에 구조와 규칙이 정리되어 있고, 웹 세션 시작 훅(`.claude/hooks/session-start.sh`)이
+`pip install -e .[test]` 를 자동 실행하므로 바로 요청하면 됩니다. 예:
+
+- "런타임 1.7.120 추가해줘" → `runtimes.json` 수정 + 테스트
+- "`skbuild check` 에 SKSE 최소 버전 검사 옵션 추가해줘"
+- "minimal 템플릿에 Papyrus 네이티브 함수 등록 예시 넣어줘"
+- "이 DLL 호환성 검사해줘" (DLL 파일을 저장소에 올린 뒤)
+
+Claude 는 변경 후 `pytest` 로 검증하고 PR 로 올립니다. 실제 C++ 빌드는 Windows PC 에서 `skbuild build` 로 확인하세요.
+
 ## 런타임 추가 / 갱신
 
 새 게임 패치가 나오면 `skbuild/data/runtimes.json` 에 항목을 추가하고 `default` 를 바꾸면 됩니다.
