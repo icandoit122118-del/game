@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "skse-buildkit"
+version = "0.1.0"
+description = "SKSE / Address Library 기반 스카이림 모드 프로젝트 생성·빌드·호환성 검사·패키징 CLI"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.scripts]
+skbuild = "skbuild.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["skbuild*"]
+
+[tool.setuptools.package-data]
+skbuild = ["data/*.json", "templates/*/*", "templates/*/src/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
