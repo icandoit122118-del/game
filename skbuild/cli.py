@@ -13,7 +13,7 @@ from skbuild.config import load_config
 from skbuild.packager import create_package
 from skbuild.pe import PEError
 from skbuild.runtimes import all_runtimes, default_version, get_runtime, unpack_version
-from skbuild.scaffold import BASELINE_PLACEHOLDER, create_project
+from skbuild.scaffold import BASELINE_PLACEHOLDER, DEFAULT_TEMPLATE, TEMPLATES, create_project
 
 
 def _runtimes(values: list[str] | None, fallback: list[str] | None = None):
@@ -39,14 +39,15 @@ def cmd_init(args) -> int:
         version=args.version,
         description=args.description,
         runtimes=args.runtime,
+        template=args.template,
         resolve_baselines=not args.offline,
         force=args.force,
     )
-    print(f"프로젝트 생성: {dest.resolve()}")
+    print(f"프로젝트 생성 ({args.template} 템플릿): {dest.resolve()}")
     for p in written:
         print(f"  + {p.relative_to(dest.resolve())}")
     vcfg = dest / "vcpkg-configuration.json"
-    if BASELINE_PLACEHOLDER in vcfg.read_text(encoding="utf-8"):
+    if vcfg.is_file() and BASELINE_PLACEHOLDER in vcfg.read_text(encoding="utf-8"):
         print(f"\n[주의] {vcfg.name} 의 baseline 을 채우지 못했습니다. 각 레지스트리의 최신 커밋 SHA 로 바꾸세요:")
         print("  git ls-remote https://github.com/microsoft/vcpkg HEAD")
         print("  git ls-remote https://gitlab.com/colorglass/vcpkg-colorglass HEAD")
@@ -136,6 +137,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--version", default="1.0.0")
     s.add_argument("--description", default="")
     s.add_argument("--runtime", action="append", help=rt_help)
+    s.add_argument("--template", choices=list(TEMPLATES), default=DEFAULT_TEMPLATE,
+                   help="commonlib: CommonLibSSE-NG+vcpkg (기본), minimal: 외부 라이브러리 없음")
     s.add_argument("--offline", action="store_true", help="vcpkg baseline 자동 조회 생략")
     s.add_argument("--force", action="store_true", help="비어 있지 않은 폴더에 덮어쓰기")
     s.set_defaults(func=cmd_init)

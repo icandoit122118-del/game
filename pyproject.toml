@@ -20,7 +20,7 @@ skbuild = "skbuild.cli:main"
 include = ["skbuild*"]
 
 [tool.setuptools.package-data]
-skbuild = ["data/*.json", "templates/*", "templates/src/*"]
+skbuild = ["data/*.json", "templates/*/*", "templates/*/src/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

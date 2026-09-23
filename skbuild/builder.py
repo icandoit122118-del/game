@@ -31,7 +31,8 @@ def preflight(cfg: ProjectConfig) -> list[str]:
         problems.append("SKSE 플러그인은 Windows(MSVC)에서만 빌드할 수 있습니다")
     if shutil.which("cmake") is None:
         problems.append("cmake 를 PATH 에서 찾을 수 없습니다")
-    if not os.environ.get("VCPKG_ROOT"):
+    uses_vcpkg = (cfg.root / "vcpkg.json").is_file()
+    if uses_vcpkg and not os.environ.get("VCPKG_ROOT"):
         problems.append("VCPKG_ROOT 환경 변수가 설정되지 않았습니다")
     vcfg = cfg.root / "vcpkg-configuration.json"
     if vcfg.is_file() and BASELINE_PLACEHOLDER in vcfg.read_text(encoding="utf-8"):
