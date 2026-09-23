@@ -1,107 +1,94 @@
-# wingui — Claude Code / Codex가 Windows GUI를 "눈 없이" 다루게 하는 도구
+# skse-buildkit (`skbuild`)
 
-스크린샷을 보고 좌표를 클릭하는 방식도 아니고, 미리 짜 둔 매크로(오토메이션 스크립트)도 아닙니다.
-Windows **UI Automation(UIA)** — 스크린리더가 쓰는 접근성 트리 — 를 **MCP 서버**와 CLI로 열어서,
-에이전트가 창 구조를 텍스트로 읽고 버튼·입력칸·메뉴를 **의미 단위로 직접 조작**하게 합니다.
+스카이림 **SKSE + Address Library** 기반 모드를 한 번에 **생성 → 빌드 → 호환성 검사 → 패키징** 하는 Python CLI 입니다.
+기본 대상 런타임은 **Steam 최신 1.7.104** 이며, 런타임 목록은 `skbuild/data/runtimes.json` 에서 관리합니다.
 
-```
-에이전트                          wingui (MCP)                     Windows 앱
- snapshot("메모장")   ──────▶  UIA 트리 순회            ──────▶  COM / UIA Provider
-                     ◀──────  - Edit "텍스트 편집기" [e5] value="" {value}
-                              - MenuItem "파일" [e3] {expand}
- set_value("e5","안녕") ─────▶  ValuePattern.SetValue    (마우스·키보드 이벤트 없음)
- menu("w1","파일 > 저장") ───▶  ExpandCollapse → Invoke
+## 설치
+
+```bash
+pip install -e .          # Python 3.11+
+pip install -e .[test] && pytest
 ```
 
-| 방식 | 입력 | 단점 |
-| --- | --- | --- |
-| 화면 보고 클릭 (computer use) | 스크린샷 + 좌표 | 느림, 해상도/DPI/테마에 깨짐, 토큰 많이 씀 |
-| 매크로/오토메이션 스크립트 | 사람이 미리 작성 | 매번 새로 짜야 함, 에이전트가 판단 못 함 |
-| **wingui (UIA 트리)** | 요소 이름·ID·패턴 | 접근성 정보를 안 내는 앱(게임, 캔버스)은 한계 |
+## 명령
 
-## 설치 (Windows)
+| 명령 | 설명 |
+| --- | --- |
+| `skbuild runtimes` | 알려진 런타임과 Address Library 파일명 목록 |
+| `skbuild init MyPlugin --author me [--runtime 1.7.104 ...]` | CommonLibSSE-NG 기반 C++ 플러그인 프로젝트 생성 |
+| `skbuild build [--preset release] [--dry-run]` | CMake 프리셋으로 빌드 (Windows + MSVC + vcpkg) |
+| `skbuild check Plugin.dll [--runtime ...] [--game-dir "C:/.../Skyrim Special Edition"]` | DLL 호환성 검사 + 게임 폴더 설치 상태 확인 |
+| `skbuild package [--fomod] [-o dist] [--force]` | 호환성 검사 통과 시 배포 zip 생성 |
 
-Windows 쪽 Python 3.10+ 이 필요합니다.
+### `init` — 프로젝트 생성
 
-```powershell
-git clone <this repo> wingui; cd wingui
-pip install -e .
-wingui windows        # 창 목록이 나오면 OK
-```
+생성 파일: `CMakeLists.txt`, `CMakePresets.json`, `vcpkg.json`, `vcpkg-configuration.json`,
+`src/PCH.h`, `src/main.cpp`, `skbuild.toml`.
 
-## 에이전트에 연결
+- `add_commonlibsse_plugin()` 이 `SKSEPlugin_Version` / `SKSEPlugin_Query` export 를 생성하므로 SE·AE 겸용 DLL 이 나옵니다.
+- 주소는 `REL::RelocationID(SE_ID, AE_ID)` 로 Address Library ID 를 사용합니다 (`main.cpp` 예시 참고).
+- vcpkg / colorglass 레지스트리 baseline 은 `git ls-remote` 로 자동 채웁니다. 오프라인이면(`--offline`)
+  `REPLACE_WITH_COMMIT_SHA` 가 남고, `build` 가 이를 감지해 알려 줍니다.
 
-**Claude Code**
+### `build` — 빌드
 
-```powershell
-claude mcp add wingui -- wingui-mcp
-# 또는 이 저장소 루트의 .mcp.json 을 쓰는 프로젝트에 복사
-```
+필요 환경: Windows, Visual Studio 2022(C++), CMake 3.24+, Ninja, `VCPKG_ROOT` 환경 변수.
+Developer PowerShell 에서 실행하세요. `--dry-run` 으로 실행될 명령만 확인할 수 있습니다.
 
-**Codex CLI** — `%USERPROFILE%\.codex\config.toml` 에 추가 ([examples/codex-config.toml](examples/codex-config.toml)):
+### `check` — 호환성 검사
+
+순수 Python PE 파서로 DLL 의 export 와 `SKSEPluginVersionData` 를 읽어 런타임별로 판정합니다.
+
+- 64비트 DLL 인지, `SKSEPlugin_Load` 가 있는지
+- AE(1.6+/1.7) 런타임: `SKSEPlugin_Version` 필수. `compatibleVersions` 에 명시되었거나
+  Address Library / 시그니처 버전 독립 플래그가 있어야 함
+- 1.6.629 이후 런타임: `StructsPost629` 또는 `NoStructUse` 플래그 필요 (없으면 SKSE 가 로드 거부)
+- SE(1.5.97) 런타임: `SKSEPlugin_Query` 필수
+- `--game-dir`: `SkyrimSE.exe` 버전, `skse64_loader.exe`, `Data/SKSE/Plugins/<Address Library bin>` 존재 확인
+
+비호환이면 종료 코드 1 을 반환하므로 CI 에서 그대로 사용할 수 있습니다.
+
+### `package` — 패키징
+
+빌드 폴더에서 `<이름>.dll` 을 찾아 `check` 를 거친 뒤 `dist/<이름>-<버전>.zip` 을 만듭니다.
+
+- 일반 zip: 루트가 Data 폴더 (`SKSE/Plugins/<이름>.dll`)
+- `--fomod`: `Data/...` + `fomod/info.xml`, `fomod/ModuleConfig.xml`
+- `skbuild.toml` 의 `[package.files]` 로 ESP, INI, 스크립트 등을 추가하고 `include_pdb = true` 로 PDB 포함
+
+## skbuild.toml
 
 ```toml
-[mcp_servers.wingui]
-command = "wingui-mcp"
-args = []
-tool_timeout_sec = 120
+[project]
+name = "MyPlugin"
+version = "1.0.0"
+author = "me"
+runtimes = ["1.7.104"]
+
+[build]
+preset = "release"
+dir = "build"
+
+[package]
+include_pdb = false
+
+[package.files]
+"data/MyPlugin.esp" = "MyPlugin.esp"
+"config/MyPlugin.ini" = "SKSE/Plugins/MyPlugin.ini"
 ```
 
-**WSL에서 에이전트를 돌리는 경우**: UIA는 Windows 프로세스에서만 동작하므로 서버는 Windows Python으로 띄웁니다.
-stdio는 WSL interop으로 그대로 연결됩니다.
+## 런타임 추가 / 갱신
 
-```bash
-claude mcp add wingui -- cmd.exe /c py -m wingui
-```
+새 게임 패치가 나오면 `skbuild/data/runtimes.json` 에 항목을 추가하고 `default` 를 바꾸면 됩니다.
+목록에 없는 버전도 `--runtime 1.7.200` 처럼 지정하면 Address Library 파일명을 규칙대로
+(`versionlib-1-7-200-0.bin`, SE 는 `version-…bin`) 추정합니다.
 
-MCP를 못 쓰는 환경이면 셸에서 `wingui` CLI를 직접 호출해도 됩니다 ([AGENTS.md](AGENTS.md) 참고).
-`AGENTS.md`(Codex)와 `CLAUDE.md`(Claude Code)에 에이전트용 사용 규칙이 들어 있습니다.
+> 참고: 1.7.104 용 Address Library 파일명은 AE 규칙(`versionlib-1-7-104-0.bin`)을 가정했습니다.
+> 또한 1.7.x 대응은 사용하는 CommonLibSSE-NG 버전이 해당 런타임을 지원해야 합니다.
 
-## MCP 도구
+---
 
-| 도구 | 하는 일 | 사용하는 UIA 패턴 |
-| --- | --- | --- |
-| `list_windows` | 최상위 창 목록 (ref, 제목, pid, hwnd) | — |
-| `launch` | 프로그램 실행 후 새 창 ref 반환 | — |
-| `snapshot` | 창/요소의 접근성 트리를 텍스트로 | 전부 (상태 표시) |
-| `find` | 이름·AutomationId·타입으로 검색 | — |
-| `invoke` | 버튼 누르기 / 체크 / 선택 / 펼치기 | Invoke → Toggle → SelectionItem → ExpandCollapse → LegacyIAccessible |
-| `set_value` | 입력칸 텍스트, 슬라이더 값 설정 | Value, RangeValue |
-| `select` | 콤보박스·리스트·탭에서 항목 선택 | ExpandCollapse + SelectionItem |
-| `toggle`, `expand` | 체크 상태 지정, 트리/콤보 펼치기 | Toggle, ExpandCollapse |
-| `menu` | `"파일 > 다른 이름으로 저장"` 경로 실행 | ExpandCollapse, Invoke |
-| `get_text` | 문서/입력칸/라벨 텍스트 읽기 | Text, Value, LegacyIAccessible |
-| `wait_for` | 창·요소가 나타나거나 사라질 때까지 대기 | — |
-| `focus`, `close_window` | 창 활성화, 닫기 요청 | Window |
-| `type_text`, `send_keys` | Value 패턴이 없을 때의 키보드 폴백 | (유니코드 키 입력) |
+## 다른 도구: `wingui/`
 
-`snapshot` 한 줄 형식: `Type "Name" [ref] #AutomationId 상태 {가능한 동작}`
-
-```
-- Window "제목 없음 - 메모장" [w1]
-  - MenuBar "애플리케이션" [e2]
-    - MenuItem "파일" [e3] collapsed {expand}
-  - Document "텍스트 편집기" [e5] #15 value="" {value,text}
-  - Button "닫기" [e9] {invoke}
-```
-
-- 이름 없고 동작도 없는 레이아웃용 컨테이너는 기본으로 숨깁니다 (`compact=false`로 전부 표시).
-- ref는 요소가 살아 있는 동안 유지됩니다(RuntimeId 기준). 사라진 요소를 쓰면 "새 snapshot을 찍으라"는 오류가 납니다.
-- 마우스 이동·좌표 클릭 기능은 의도적으로 넣지 않았습니다.
-
-## 한계
-
-- 접근성 정보를 노출하지 않는 UI(DirectX/OpenGL 게임 화면, 캔버스, 일부 Java/Qt/Electron 앱)는 트리가 거의 비어 있습니다.
-  이 경우 `send_keys`(단축키) 정도만 가능합니다. Electron/Chromium 앱은 `--force-renderer-accessibility`로 실행하면 트리가 채워집니다.
-- 관리자 권한으로 실행된 앱은 wingui도 관리자 권한으로 띄워야 조작할 수 있습니다(UIPI).
-- 잠긴 화면/로그오프 세션에서는 동작하지 않습니다.
-
-## 개발
-
-```bash
-pip install -e .[dev]
-pytest   # 가짜 UIA 트리로 테스트 → Linux/macOS에서도 실행됨
-```
-
-구조: `src/wingui/core.py`(UIA 로직, `Session`), `server.py`(MCP), `cli.py`(CLI).
-UIA COM 객체는 스레드(아파트먼트)에 묶이므로 서버는 모든 호출을 단일 워커 스레드에서 실행합니다.
+Claude Code / Codex가 스크린샷·좌표 클릭 없이 Windows UI Automation(접근성 트리)으로 GUI 앱을 조작하게 하는 MCP 서버 + CLI입니다.
+별도 패키지(`wingui-mcp`)이며 자세한 내용은 [wingui/README.md](wingui/README.md)를 보세요.

@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "wingui-mcp"
+version = "0.1.0"
+description = "Let Claude Code / Codex operate Windows GUI apps through the UI Automation tree instead of screenshots and mouse clicks"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.2",
+    "uiautomation>=2.0.18; sys_platform == 'win32'",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+wingui = "wingui.cli:main"
+wingui-mcp = "wingui.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/wingui"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,28 +1,26 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
 
 [project]
-name = "wingui-mcp"
+name = "skse-buildkit"
 version = "0.1.0"
-description = "Let Claude Code / Codex operate Windows GUI apps through the UI Automation tree instead of screenshots and mouse clicks"
+description = "SKSE / Address Library 기반 스카이림 모드 프로젝트 생성·빌드·호환성 검사·패키징 CLI"
 readme = "README.md"
-requires-python = ">=3.10"
-dependencies = [
-    "mcp>=1.2",
-    "uiautomation>=2.0.18; sys_platform == 'win32'",
-]
+requires-python = ">=3.11"
+dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=7"]
+test = ["pytest"]
 
 [project.scripts]
-wingui = "wingui.cli:main"
-wingui-mcp = "wingui.server:main"
+skbuild = "skbuild.cli:main"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/wingui"]
+[tool.setuptools.packages.find]
+include = ["skbuild*"]
+
+[tool.setuptools.package-data]
+skbuild = ["data/*.json", "templates/*", "templates/src/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
