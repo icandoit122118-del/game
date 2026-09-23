@@ -1,0 +1,29 @@
+{
+  "default": "1.7.104",
+  "runtimes": [
+    {
+      "version": "1.7.104",
+      "edition": "AE",
+      "label": "Steam 최신 (2026)",
+      "address_library": "versionlib-1-7-104-0.bin"
+    },
+    {
+      "version": "1.6.1170",
+      "edition": "AE",
+      "label": "Anniversary Edition 1.6 최종",
+      "address_library": "versionlib-1-6-1170-0.bin"
+    },
+    {
+      "version": "1.6.640",
+      "edition": "AE",
+      "label": "Anniversary Edition 1.6.640",
+      "address_library": "versionlib-1-6-640-0.bin"
+    },
+    {
+      "version": "1.5.97",
+      "edition": "SE",
+      "label": "Special Edition 구버전",
+      "address_library": "version-1-5-97-0.bin"
+    }
+  ]
+}

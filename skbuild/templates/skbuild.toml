@@ -1,0 +1,19 @@
+[project]
+name = "@@NAME@@"
+version = "@@VERSION@@"
+author = "@@AUTHOR@@"
+description = "@@DESCRIPTION@@"
+# 호환성 검사 대상 런타임 (skbuild runtimes 로 목록 확인)
+runtimes = [@@RUNTIMES@@]
+
+[build]
+preset = "release"
+dir = "build"
+
+[package]
+include_pdb = false
+
+# 추가로 패키지에 넣을 파일: "소스 경로" = "Data 기준 대상 경로"
+[package.files]
+# "data/@@NAME@@.esp" = "@@NAME@@.esp"
+# "config/@@NAME@@.ini" = "SKSE/Plugins/@@NAME@@.ini"
