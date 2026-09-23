@@ -1,0 +1,12 @@
+# Append to %USERPROFILE%\.codex\config.toml (Windows) or ~/.codex/config.toml.
+
+[mcp_servers.wingui]
+command = "wingui-mcp"
+args = []
+# UI actions such as waiting for a dialog can take a while.
+tool_timeout_sec = 120
+
+# Running Codex inside WSL? Call the Windows-side Python instead:
+# [mcp_servers.wingui]
+# command = "cmd.exe"
+# args = ["/c", "py", "-m", "wingui"]

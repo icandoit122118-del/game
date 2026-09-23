@@ -85,3 +85,10 @@ include_pdb = false
 
 > 참고: 1.7.104 용 Address Library 파일명은 AE 규칙(`versionlib-1-7-104-0.bin`)을 가정했습니다.
 > 또한 1.7.x 대응은 사용하는 CommonLibSSE-NG 버전이 해당 런타임을 지원해야 합니다.
+
+---
+
+## 다른 도구: `wingui/`
+
+Claude Code / Codex가 스크린샷·좌표 클릭 없이 Windows UI Automation(접근성 트리)으로 GUI 앱을 조작하게 하는 MCP 서버 + CLI입니다.
+별도 패키지(`wingui-mcp`)이며 자세한 내용은 [wingui/README.md](wingui/README.md)를 보세요.

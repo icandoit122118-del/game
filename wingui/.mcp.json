@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "wingui": {
+      "command": "wingui-mcp",
+      "args": []
+    }
+  }
+}
