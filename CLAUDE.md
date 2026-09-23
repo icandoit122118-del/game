@@ -22,6 +22,8 @@
 
 ## 검증
 - `pytest` — 전체 테스트. `tests/pe_factory.py` 가 합성 DLL 을, `tests/addrlib_factory.py` 가 Address Library `.bin` 을 만든다.
-  minimal 템플릿의 C++ 로더 테스트는 g++ 로 실제 컴파일한다.
+  minimal 템플릿의 C++ 로더 테스트는 g++ 로 실제 컴파일한다. MinGW(`apt-get install mingw-w64`)가 있으면
+  minimal 템플릿을 실제 Windows x64 DLL 로 교차 빌드해 `skbuild check` 판정까지 확인한다 (없으면 skip).
+  템플릿의 Windows 헤더 include 는 소문자로 쓴다 (MinGW 는 대소문자 구분).
 - 실제 SKSE 플러그인 빌드는 Windows + MSVC 에서만 가능하다. 이 환경에서는 `skbuild build --dry-run` 과
   생성 파일 검증까지만 하고, 그 사실을 사용자에게 알린다.

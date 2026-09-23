@@ -5,9 +5,9 @@
 #include "AddressLibrary.h"
 #include "SKSE.h"
 
-#include <Windows.h>
-#include <KnownFolders.h>
-#include <ShlObj.h>
+#include <windows.h>
+#include <knownfolders.h>
+#include <shlobj.h>
 
 #include <filesystem>
 #include <format>
